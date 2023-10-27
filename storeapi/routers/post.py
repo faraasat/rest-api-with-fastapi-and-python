@@ -10,7 +10,7 @@ comment_table = {}
 
 
 def find_post(post_id: int):
-    post_table.get(post_id)
+    return post_table.get(post_id)
 
 
 @router.post("/post", response_model=UserPost, status_code=201)
@@ -31,6 +31,7 @@ async def get_post():
 @router.post("/comment", response_model=Comment, status_code=201)
 async def create_comment(comment: CommentIn):
     post = find_post(comment.post_id)
+
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
