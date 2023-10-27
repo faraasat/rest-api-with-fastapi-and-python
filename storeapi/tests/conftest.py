@@ -1,12 +1,17 @@
 # this is a fixture and a fixture is used to share the data
+import os
 from typing import AsyncGenerator, Generator
 
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from storeapi.main import app
-from storeapi.routers.post import comment_table, post_table
+# from storeapi.routers.post import comment_table, post_table
+
+os.environ["ENV_STATE"] = "test"
+
+from storeapi.main import app  # noqa: E402
+from storeapi.database import database  # noqa: E402
 
 
 # "session" means run only once for the test session
@@ -23,9 +28,13 @@ def client() -> Generator:
 # auto is to run on every test
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
-    post_table.clear()
-    comment_table.clear()
+    # post_table.clear()
+    # comment_table.clear()
+
+    # after every disconnect database will rollback as DB_FORCE_ROLLBACK is True
+    await database.connect()
     yield
+    await database.disconnect()
 
 
 @pytest.fixture()

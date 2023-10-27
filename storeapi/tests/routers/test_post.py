@@ -32,7 +32,7 @@ async def test_create_post(async_client: AsyncClient):
     )
 
     assert response.status_code == 201
-    assert {"id": 0, "body": body}.items() <= response.json().items()
+    assert {"id": 1, "body": body}.items() <= response.json().items()
 
 
 @pytest.mark.anyio
@@ -63,7 +63,7 @@ async def test_create_comment(async_client: AsyncClient, created_post: dict):
     )
 
     assert response.status_code == 201
-    assert {"id": 0, "body": body,
+    assert {"id": 1, "body": body,
             "post_id": created_post["id"]}.items() <= response.json().items()
 
 
