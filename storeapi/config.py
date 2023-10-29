@@ -13,6 +13,7 @@ class BaseConfig(BaseSettings):
 class GlobalConfig(BaseConfig):
     DATABASE_URL: Optional[str] = None
     DB_FORCE_ROLLBACK: bool = False
+    LOGTAIL_API_KEY: Optional[str] = None
 
 
 class ProdConfig(GlobalConfig):

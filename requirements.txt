@@ -5,5 +5,7 @@ databases[aiosqlite]
 # databases[asyncpg]
 python-dotenv
 pydantic-settings
-logging
 rich
+asgi-correlation-id
+python-json-logger
+logtail-python
