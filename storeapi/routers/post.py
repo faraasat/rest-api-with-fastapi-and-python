@@ -1,6 +1,7 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from storeapi.models.post import (
     UserPost,
@@ -10,6 +11,8 @@ from storeapi.models.post import (
     UserPostWithComments,
 )
 from storeapi.database import comment_table, post_table, database
+from storeapi.models.user import User
+from storeapi.security import get_current_user
 
 router = APIRouter()
 
@@ -31,12 +34,16 @@ async def find_post(post_id: int):
 
 
 @router.post("/post", response_model=UserPost, status_code=201)
-async def create_post(post: UserPostIn):
+async def create_post(
+    post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]
+):
     logger.info("Getting a Post")
 
-    data = post.model_dump()
+    data = {**post.model_dump(), "user_id": current_user.id}
 
-    query = post_table.insert().values({"body": data["body"]})
+    query = post_table.insert().values(
+        {"body": data["body"], "user_id": data["user_id"]}
+    )
     logger.debug(query)
 
     last_record_id = await database.execute(query)
@@ -56,7 +63,9 @@ async def get_post():
 
 
 @router.post("/comment", response_model=Comment, status_code=201)
-async def create_comment(comment: CommentIn):
+async def create_comment(
+    comment: CommentIn, current_user: Annotated[User, Depends(get_current_user)]
+):
     logger.info("Creating Comment")
 
     post = await find_post(comment.post_id)
@@ -65,7 +74,7 @@ async def create_comment(comment: CommentIn):
         # logger.error(f"Post with id {comment.post_id} not found")
         raise HTTPException(status_code=404, detail="Post not found")
 
-    data = comment.model_dump()
+    data = {**comment.model_dump(), "user_id": current_user.id}
     query = comment_table.insert().values(data)
 
     logger.debug(query)
