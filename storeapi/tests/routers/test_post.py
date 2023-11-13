@@ -227,8 +227,7 @@ async def test_get_post_with_comment(
 
     assert response.status_code == 200
     assert response.json() == {
-        "post": created_post,
-        # "likes": 0,
+        "post": {**created_post, "likes": 0},
         "comments": [created_comment],
     }
 
