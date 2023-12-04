@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
+from typing import Optional
+
 
 class UserPostIn(BaseModel):
     body: str
@@ -8,8 +10,10 @@ class UserPostIn(BaseModel):
 class UserPost(UserPostIn):
     # so that returned values can be parsed to dict or object respectively
     model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
+    image_url: Optional[str] = None
 
 
 class UserPostWithLikes(UserPost):
