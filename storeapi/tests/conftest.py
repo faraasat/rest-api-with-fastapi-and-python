@@ -6,6 +6,7 @@ from unittest.mock import Mock, AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, Request, Response
+from storeapi.tests.helpers import create_post
 
 # from storeapi.routers.post import comment_table, post_table
 
@@ -34,8 +35,14 @@ async def db() -> AsyncGenerator:
 
     # after every disconnect database will rollback as DB_FORCE_ROLLBACK is True
     await database.connect()
-    yield
+    yield database
     await database.disconnect()
+
+
+# this fixture will look for AsynClient first in this file check the conftest in the same directory and then check the conftest.py in outer directory
+@pytest.fixture()
+async def created_post(async_client: AsyncClient, logged_in_token: str):
+    return await create_post("Test Post", async_client, logged_in_token)
 
 
 @pytest.fixture()

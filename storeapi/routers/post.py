@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 from enum import Enum
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 import sqlalchemy
 
 from storeapi.models.post import (
@@ -18,6 +18,7 @@ from storeapi.models.post import (
 from storeapi.database import comment_table, post_table, database, like_table
 from storeapi.models.user import User
 from storeapi.security import get_current_user
+from storeapi.tasks import generate_and_add_to_post
 
 router = APIRouter()
 
@@ -48,7 +49,11 @@ async def find_post(post_id: int):
 
 @router.post("/post", response_model=UserPost, status_code=201)
 async def create_post(
-    post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]
+    post: UserPostIn,
+    current_user: Annotated[User, Depends(get_current_user)],
+    background_task: BackgroundTasks,
+    request: Request,
+    prompt: str = None,
 ):
     logger.info("Getting a Post")
 
@@ -60,6 +65,16 @@ async def create_post(
     logger.debug(query)
 
     last_record_id = await database.execute(query)
+
+    if prompt:
+        background_task.add_task(
+            generate_and_add_to_post,
+            current_user.email,
+            last_record_id,
+            request.url_for("get_post_with_comments", post_id=last_record_id),
+            database,
+            prompt,
+        )
 
     return {**data, "id": last_record_id}
 
